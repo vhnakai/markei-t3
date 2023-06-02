@@ -48,6 +48,7 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        subPink: "hsl(333, 10% ,44%)",
       },
       borderRadius: {
         lg: `var(--radius)`,

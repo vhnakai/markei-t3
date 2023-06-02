@@ -8,15 +8,16 @@ import { ptBR } from "date-fns/locale";
 const Home: NextPage = () => {
 
     return (
-        <div className="max-w-none h-screen flex items-center justify-evenly ">
-            <div className="max-w-md px-0 py-10 ">
-                <h1 className="text-4xl font-serif">Agendamento descomplicado</h1>
-                <p className="text-xl font-sans text-gray-500">
+        <div className="max-w-none h-screen flex flex-col items-center justify-evenly md:flex-row md:justify-center">
+            <div className="max-w-md p-10">
+                <h1 className="text-6xl font-extrabold font-serif">Markei</h1>
+                <h3 className="text-2xl font-bold font-sans">Agendamento descomplicado</h3>
+                <p className="text-lg font-sans text-subPink opacity-70">
                     Conecte seu calendário e permita que as pessoas marquem agendamentos
                     no seu tempo livre.
                 </p>
             </div>
-            <Calendar mode="single" locale={ptBR} disableNavigation className="rounded-xl border delay-150" />
+            <Calendar mode="single" locale={ptBR} disableNavigation className="rounded-md border font-mono text-sm" />
         </div>
     );
 };
