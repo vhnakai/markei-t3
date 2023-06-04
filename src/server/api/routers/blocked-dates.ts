@@ -3,12 +3,12 @@ import { z } from "zod";
 import {
   createTRPCRouter,
   publicProcedure,
-  //protectedProcedure,
+  protectedProcedure,
 } from "@/server/api/trpc";
 
 export const blockedDatesrouter = createTRPCRouter({
 
-  blockedDates: publicProcedure
+  blockedDates: protectedProcedure
     .input(z.object({
       user_uuid: z.string(),
       year: z.number(),
@@ -58,8 +58,4 @@ export const blockedDatesrouter = createTRPCRouter({
 
       return { blockedWeekDays, blockedDates }
     }),
-
-  // getSecretMessage: protectedProcedure.query(() => {
-  //   return "you can now see this secret message!";
-  // }),
 });

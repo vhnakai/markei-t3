@@ -4,12 +4,12 @@ import dayjs from "dayjs";
 import {
   createTRPCRouter,
   publicProcedure,
-  //protectedProcedure,
+  protectedProcedure,
 } from "@/server/api/trpc";
 
 export const scheduringRouter = createTRPCRouter({
 
-  schedure: publicProcedure
+  schedure: protectedProcedure
     .input(z.object({
       user_uuid: z.string(),
       name: z.string(),
@@ -83,8 +83,4 @@ export const scheduringRouter = createTRPCRouter({
 
       return { message: 'A new appointment was successfully scheduled.', schedureId: scheduling.id  }
     }),
-
-  // getSecretMessage: protectedProcedure.query(() => {
-  //   return "you can now see this secret message!";
-  // }),
 });

@@ -1,12 +1,13 @@
 import { type NextPage } from "next";
 
-//import { SignIn, SignInButton, SignOutButton, useUser } from "@clerk/clerk-react";
+import { SignIn, SignInButton, SignOutButton, useUser } from "@clerk/clerk-react";
 // import { Button } from "@/components/button";
 import { Calendar } from "@/components/calendar";
 import { ptBR } from "date-fns/locale";
 
 const Home: NextPage = () => {
 
+    const {isSignedIn, user} = useUser()
     return (
         <div className="max-w-none h-screen flex flex-col items-center justify-evenly md:flex-row md:justify-center">
             <div className="max-w-md p-10">
@@ -16,8 +17,12 @@ const Home: NextPage = () => {
                     Conecte seu calendário e permita que as pessoas marquem agendamentos
                     no seu tempo livre.
                 </p>
+
+                {!isSignedIn && <SignInButton/>}
+
+                {!!isSignedIn && <SignOutButton/>}
             </div>
-            <Calendar mode="single" locale={ptBR} disableNavigation className="rounded-md border font-mono text-sm" />
+            <Calendar mode="single" locale={ptBR} disableNavigation className="rounded-2xl border font-mono text-sm" />
         </div>
     );
 };

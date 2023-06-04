@@ -4,12 +4,12 @@ import dayjs from 'dayjs'
 import {
   createTRPCRouter,
   publicProcedure,
-  //protectedProcedure,
+  protectedProcedure,
 } from "@/server/api/trpc";
 
 export const availabilityRouter = createTRPCRouter({
 
-  available: publicProcedure.input(z.object({
+  available: protectedProcedure.input(z.object({
     user_uuid: z.string(),
     date: z.date()
   })).query(async ({ ctx, input }) => {
@@ -71,8 +71,4 @@ export const availabilityRouter = createTRPCRouter({
     return { possibleTimes, availableTimes }
 
   }),
-
-  // getSecretMessage: protectedProcedure.query(() => {
-  //   return "you can now see this secret message!";
-  // }),
 });

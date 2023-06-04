@@ -15,7 +15,7 @@
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
-//import { getAuth } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server";
 
 import { prisma } from "@/server/db";
 
@@ -27,10 +27,11 @@ import { prisma } from "@/server/db";
  */
 export const createTRPCContext = (opts: CreateNextContextOptions) => {
   const { req } = opts;
-  //const user = getAuth(req);
+  const user = getAuth(req);
 
    return {
     prisma,
+    session: user
   };
 };
 
@@ -83,17 +84,17 @@ export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure;
 
 /** Reusable middleware that enforces users are logged in before running the procedure. */
-// const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-//   if (!ctx.session || !ctx.session.user) {
-//     throw new TRPCError({ code: "UNAUTHORIZED" });
-//   }
-//   return next({
-//     ctx: {
-//       // infers the `session` as non-nullable
-//       session: { ...ctx.session, user: ctx.session.user },
-//     },
-//   });
-// });
+const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
+  if (!ctx.session || !ctx.session.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: {
+      // infers the `session` as non-nullable
+      session: { ...ctx.session, user: ctx.session.user },
+    },
+  });
+});
 
 /**
  * Protected (authenticated) procedure
@@ -103,4 +104,4 @@ export const publicProcedure = t.procedure;
  *
  * @see https://trpc.io/docs/procedures
  */
-// export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
+export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
