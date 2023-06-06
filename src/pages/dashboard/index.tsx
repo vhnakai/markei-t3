@@ -46,7 +46,6 @@ const DashboardPage: NextPage = () => {
 
     const [selectedDate, setSelectedDate] = useState<Date>()
 
-    console.log(selectedDate);
 
     const { user } = useUser()
     if (!user) return <div>404</div>;
@@ -65,8 +64,8 @@ const DashboardPage: NextPage = () => {
                 locale={ptBR}  
                 className="rounded-md border-1 font-mono text-sm"  
                 selected={selectedDate} 
-                onSelect={setSelectedDate} 
-                today={new Date()}
+                onSelect={setSelectedDate}
+                onDayClick={handleCalendarInput}
                 />
 
             </div>
