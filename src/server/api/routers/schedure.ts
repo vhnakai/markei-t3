@@ -81,32 +81,32 @@ export const scheduringRouter = createTRPCRouter({
       //   },
       // })
 
-      return { message: 'A new appointment was successfully scheduled.', schedureId: scheduling.id  }
+      return { message: 'A new appointment was successfully scheduled.', schedureId: scheduling.id }
     }),
   appointments: publicProcedure.input(z.object({
     user_uuid: z.string()
   }))
-  .query(
-    async ({ ctx, input }) => {
-      const { user_uuid } = input
+    .query(
+      async ({ ctx, input }) => {
+        const { user_uuid } = input
 
-      const appointments = await ctx.prisma.scheduling.findMany({
-        select: {
-          name: true,
-          date: true,
-          observations: true
-        },
-        where: {
-          userId: user_uuid,
-        },
-        orderBy: {
-          date: "asc"
-        },
-        take: 15
-      })
+        const appointments = await ctx.prisma.scheduling.findMany({
+          select: {
+            name: true,
+            date: true,
+            observations: true
+          },
+          where: {
+            userId: user_uuid,
+          },
+          orderBy: {
+            date: "asc"
+          },
+          take: 15
+        })
 
-      return appointments
+        return appointments
 
-    }
-  )
+      }
+    )
 });
