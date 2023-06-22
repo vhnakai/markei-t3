@@ -1,25 +1,25 @@
-import { z } from "zod";
-import dayjs from "dayjs";
+import { z } from 'zod'
+import dayjs from 'dayjs'
 
 import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
-} from "@/server/api/trpc";
+} from '@/server/api/trpc'
 
 export const scheduringRouter = createTRPCRouter({
-
   schedure: protectedProcedure
-    .input(z.object({
-      user_uuid: z.string(),
-      name: z.string(),
-      email: z.string().email(),
-      observations: z.string(),
-      date: z.string().datetime(),
-    }))
+    .input(
+      z.object({
+        userUuid: z.string(),
+        name: z.string(),
+        email: z.string().email(),
+        observations: z.string(),
+        date: z.string().datetime(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
-
-      const { user_uuid, name, email, observations, date } = input
+      const { userUuid, name, email, observations, date } = input
 
       const schedulingDate = dayjs(date).startOf('hour')
 
@@ -31,7 +31,7 @@ export const scheduringRouter = createTRPCRouter({
 
       const conflictingScheduling = await ctx.prisma.scheduling.findFirst({
         where: {
-          userId: user_uuid,
+          userId: userUuid,
           date: schedulingDate.toDate(),
         },
       })
@@ -48,7 +48,7 @@ export const scheduringRouter = createTRPCRouter({
           email,
           observations,
           date: schedulingDate.toDate(),
-          userId: user_uuid,
+          userId: userUuid,
         },
       })
 
@@ -81,32 +81,35 @@ export const scheduringRouter = createTRPCRouter({
       //   },
       // })
 
-      return { message: 'A new appointment was successfully scheduled.', schedureId: scheduling.id }
-    }),
-  appointments: publicProcedure.input(z.object({
-    user_uuid: z.string()
-  }))
-    .query(
-      async ({ ctx, input }) => {
-        const { user_uuid } = input
-
-        const appointments = await ctx.prisma.scheduling.findMany({
-          select: {
-            name: true,
-            date: true,
-            observations: true
-          },
-          where: {
-            userId: user_uuid,
-          },
-          orderBy: {
-            date: "asc"
-          },
-          take: 15
-        })
-
-        return appointments
-
+      return {
+        message: 'A new appointment was successfully scheduled.',
+        schedureId: scheduling.id,
       }
+    }),
+  appointments: publicProcedure
+    .input(
+      z.object({
+        userUuid: z.string(),
+      }),
     )
-});
+    .query(async ({ ctx, input }) => {
+      const { userUuid } = input
+
+      const appointments = await ctx.prisma.scheduling.findMany({
+        select: {
+          name: true,
+          date: true,
+          observations: true,
+        },
+        where: {
+          userId: userUuid,
+        },
+        orderBy: {
+          date: 'asc',
+        },
+        take: 15,
+      })
+
+      return appointments
+    }),
+})

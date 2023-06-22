@@ -1,40 +1,36 @@
-import { z } from "zod";
+import { z } from 'zod'
 
-import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
-} from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc'
 
 export const blockedDatesrouter = createTRPCRouter({
-
   blockedDates: protectedProcedure
-    .input(z.object({
-      user_uuid: z.string(),
-      year: z.number(),
-      month: z.number(),
-    }))
+    .input(
+      z.object({
+        userUuid: z.string(),
+        year: z.number(),
+        month: z.number(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
-
-      const { user_uuid, year, month } = input
+      const { userUuid, year, month } = input
 
       const availableWeekDays = await ctx.prisma.userTimeInterval.findMany({
         select: {
-          week_day: true,
+          weekDay: true,
         },
         where: {
-          userId: user_uuid,
+          userId: userUuid,
         },
       })
 
       const blockedWeekDays = [0, 1, 2, 3, 4, 5, 6].filter((weekDay) => {
         return !availableWeekDays.some(
-          (availableWeekDay) => availableWeekDay.week_day === weekDay,
+          (availableWeekDay) => availableWeekDay.weekDay === weekDay,
         )
       })
 
-
-      const blockedDatesRaw: Array<{ date: number }> = await ctx.prisma.$queryRaw`
+      const blockedDatesRaw: Array<{ date: number }> = await ctx.prisma
+        .$queryRaw`
         SELECT
           EXTRACT(DAY FROM S.DATE) AS date,
           COUNT(S.date) AS amount,
@@ -45,7 +41,7 @@ export const blockedDatesrouter = createTRPCRouter({
         LEFT JOIN user_time_intervals UTI
           ON UTI.week_day = WEEKDAY(DATE_ADD(S.date, INTERVAL 1 DAY))
 
-        WHERE S.userId = ${user_uuid}
+        WHERE S.userId = ${userUuid}
           AND DATE_FORMAT(S.date, "%Y-%m") = ${`${year}-${month}`}
 
         GROUP BY EXTRACT(DAY FROM S.DATE),
@@ -58,4 +54,4 @@ export const blockedDatesrouter = createTRPCRouter({
 
       return { blockedWeekDays, blockedDates }
     }),
-});
+})

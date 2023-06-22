@@ -1,9 +1,8 @@
-import { createTRPCRouter } from "@/server/api/trpc";
-import { exampleRouter } from "@/server/api/routers/example";
-import { availabilityRouter } from "@/server/api/routers/availability";
-import { blockedDatesrouter } from "@/server/api/routers/blocked-dates"
-import { scheduringRouter } from "@/server/api/routers/schedure";
-
+import { createTRPCRouter } from '@/server/api/trpc'
+import { exampleRouter } from '@/server/api/routers/example'
+import { availabilityRouter } from '@/server/api/routers/availability'
+import { blockedDatesrouter } from '@/server/api/routers/blocked-dates'
+import { scheduringRouter } from '@/server/api/routers/schedure'
 
 /**
  * This is the primary router for your server.
@@ -12,10 +11,10 @@ import { scheduringRouter } from "@/server/api/routers/schedure";
  */
 export const appRouter = createTRPCRouter({
   example: exampleRouter,
-  availability:  availabilityRouter,
+  availability: availabilityRouter,
   blockedDates: blockedDatesrouter,
   schedure: scheduringRouter,
-});
+})
 
 // export type definition of API
-export type AppRouter = typeof appRouter;
+export type AppRouter = typeof appRouter
