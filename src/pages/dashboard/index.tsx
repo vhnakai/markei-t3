@@ -5,7 +5,7 @@
  *
  * */
 
-import { Calendar } from '@/components/calendar'
+import { Calendar } from '@/components/ui/calendar'
 import { api } from '@/utils/api'
 import { useUser } from '@clerk/nextjs'
 import { ptBR } from 'date-fns/locale'

@@ -1,17 +1,17 @@
 import { type NextPage } from 'next'
 import { useRouter } from 'next/router'
-import { SignInButton, SignOutButton, useUser } from '@clerk/clerk-react'
-// import { Button } from "@/components/button";
-import { Calendar } from '@/components/calendar'
+import { SignInButton, useUser } from '@clerk/clerk-react'
+import { Calendar } from '@/components/ui/calendar'
 import { ptBR } from 'date-fns/locale'
 
-const Home: NextPage = async () => {
+const Home: NextPage = () => {
   const router = useRouter()
 
   const { isSignedIn } = useUser()
 
   if (isSignedIn) {
-    await router.push('/dashboard')
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    router.push('/dashboard')
   }
 
   return (
@@ -27,8 +27,6 @@ const Home: NextPage = async () => {
         </p>
 
         {!isSignedIn && <SignInButton />}
-
-        {<SignOutButton />}
       </div>
       <Calendar
         mode="single"
