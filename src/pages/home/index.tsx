@@ -1,18 +1,10 @@
 import { type NextPage } from 'next'
-import { useRouter } from 'next/router'
 import { SignInButton, useUser } from '@clerk/clerk-react'
 import { Calendar } from '@/components/ui/calendar'
 import { ptBR } from 'date-fns/locale'
 
 const Home: NextPage = () => {
-  const router = useRouter()
-
   const { isSignedIn } = useUser()
-
-  if (isSignedIn) {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    router.push('/dashboard')
-  }
 
   return (
     <div className="flex h-screen max-w-none flex-col items-center justify-evenly md:flex-row md:justify-center">
@@ -26,7 +18,7 @@ const Home: NextPage = () => {
           no seu tempo livre.
         </p>
 
-        {!isSignedIn && <SignInButton />}
+        {!isSignedIn && <SignInButton redirectUrl="/dashboard" />}
       </div>
       <Calendar
         mode="single"

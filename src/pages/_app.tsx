@@ -4,6 +4,7 @@ import { api } from '@/utils/api'
 
 import '@/styles/globals.css'
 import Head from 'next/head'
+import { Toaster } from '@/components/ui/toaster'
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
@@ -16,6 +17,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <Toaster />
       <Component {...pageProps} />
     </ClerkProvider>
   )

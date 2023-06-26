@@ -4,6 +4,14 @@
  * - handle para redirecionar para pagina de agendamento
  *
  * */
+import { useState } from 'react'
+import { type NextPage } from 'next'
+import Head from 'next/head'
+import dayjs from 'dayjs'
+import { ptBR } from 'date-fns/locale'
+
+import { api } from '@/utils/api'
+import { SignOutButton, useUser } from '@clerk/nextjs'
 
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -16,27 +24,33 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-import { api } from '@/utils/api'
-import { useUser } from '@clerk/nextjs'
-import { ptBR } from 'date-fns/locale'
-import dayjs from 'dayjs'
-import { type NextPage } from 'next'
-import Head from 'next/head'
-import { useState } from 'react'
+// import { useRouter } from 'next/router'
+import { useToast } from '@/components/ui/use-toast'
 
-const AppointmentTable = (props: { userId: string }) => {
+const AppointmentTable = ({
+  userId: userUuid,
+  date,
+}: {
+  userId: string
+  date: Date | undefined
+}) => {
   const { data: appointments } = api.schedure.appointments.useQuery({
-    userUuid: props.userId,
+    userUuid,
+    date,
   })
-
-  if (!appointments) return <h1>No apppointment was found</h1>
 
   return (
     <Table>
-      <TableCaption>
-        Seus agendamentos marcados para hoje (
-        {dayjs(new Date()).format('DD/MM/YYYY')} )
-      </TableCaption>
+      {appointments && appointments.length > 0 ? (
+        <TableCaption>
+          Seus agendamentos marcados para hoje (
+          {dayjs(date).format('DD/MM/YYYY')} )
+        </TableCaption>
+      ) : (
+        <TableCaption>
+          Não há agendament para hoje {dayjs(date).format('DD/MM/YYYY')} )
+        </TableCaption>
+      )}
       <TableHeader>
         <TableRow>
           <TableHead className="w-[100px]">Nome</TableHead>
@@ -46,7 +60,7 @@ const AppointmentTable = (props: { userId: string }) => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {appointments.map((appointment) => (
+        {appointments?.map((appointment) => (
           <TableRow key={appointment.name}>
             <TableCell className="font-medium">{appointment.name}</TableCell>
             <TableCell>{appointment.observations}</TableCell>
@@ -61,35 +75,47 @@ const AppointmentTable = (props: { userId: string }) => {
   )
 }
 
-function handleCalendarInput(selectedDate: Date) {
-  const dateWithTime = dayjs(selectedDate).toDate()
-
-  console.log(dateWithTime)
-}
-
 const DashboardPage: NextPage = () => {
-  const [selectedDate, setSelectedDate] = useState<Date>()
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
+  const { toast } = useToast()
+
+  // const router = useRouter()
 
   const { user } = useUser()
   if (!user) return <div>404</div>
+
+  const handleCalendarInput = (selectedDate: Date | undefined) => {
+    const dateWithTime = dayjs(selectedDate).format('DD/MM/YY')
+
+    toast({
+      title: 'A sua agenda foi filtrada para o dia:',
+      description: dateWithTime,
+    })
+    /**
+     * Filtrar a lista de agendamentos para a data selecionada
+     */
+  }
 
   return (
     <>
       <Head>
         <title>{user.username ?? user.firstName}</title>
       </Head>
-      <div className="flex max-w-full items-stretch justify-center ">
-        <AppointmentTable userId={user.id} />
-
+      <div className="flex max-w-full items-stretch justify-around p-3">
+        <AppointmentTable userId={user.id} date={selectedDate} />
         <Calendar
           mode="single"
           locale={ptBR}
           className="border-1 rounded-md font-mono text-sm"
           selected={selectedDate}
-          onSelect={setSelectedDate}
-          onDayClick={handleCalendarInput}
+          onSelect={(date) => {
+            setSelectedDate(date)
+            handleCalendarInput(date)
+          }}
+          disabled={{ before: new Date() }}
         />
       </div>
+      <SignOutButton />
     </>
   )
 }

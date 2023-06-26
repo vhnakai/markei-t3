@@ -90,10 +90,11 @@ export const scheduringRouter = createTRPCRouter({
     .input(
       z.object({
         userUuid: z.string(),
+        date: z.date().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { userUuid } = input
+      const { userUuid, date } = input
 
       const appointments = await ctx.prisma.scheduling.findMany({
         select: {
@@ -103,6 +104,7 @@ export const scheduringRouter = createTRPCRouter({
         },
         where: {
           userId: userUuid,
+          date: date || new Date(),
         },
         orderBy: {
           date: 'asc',
