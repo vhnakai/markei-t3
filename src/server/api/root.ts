@@ -4,6 +4,7 @@ import { availabilityRouter } from '@/server/api/routers/availability'
 import { blockedDatesrouter } from '@/server/api/routers/blocked-dates'
 import { scheduringRouter } from '@/server/api/routers/schedure'
 import { profileRouter } from './routers/profile'
+import { timeIntervalsRouter } from './routers/time-intervals'
 
 /**
  * This is the primary router for your server.
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   blockedDates: blockedDatesrouter,
   schedure: scheduringRouter,
   profile: profileRouter,
+  timeInterval: timeIntervalsRouter,
 })
 
 // export type definition of API
