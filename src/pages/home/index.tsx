@@ -1,5 +1,5 @@
 import { type NextPage } from 'next'
-import { SignInButton, useUser } from '@clerk/clerk-react'
+import { SignOutButton, SignInButton, useUser } from '@clerk/clerk-react'
 import { Calendar } from '@/components/ui/calendar'
 import { ptBR } from 'date-fns/locale'
 
@@ -19,6 +19,7 @@ const Home: NextPage = () => {
         </p>
 
         {!isSignedIn && <SignInButton redirectUrl="/dashboard" />}
+        {!!isSignedIn && <SignOutButton />}
       </div>
       <Calendar
         mode="single"
