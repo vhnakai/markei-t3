@@ -11,7 +11,7 @@ import dayjs from 'dayjs'
 import { ptBR } from 'date-fns/locale'
 
 import { api } from '@/utils/api'
-import { SignOutButton, useUser } from '@clerk/nextjs'
+import { useUser } from '@clerk/nextjs'
 
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -24,8 +24,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-// import { useRouter } from 'next/router'
 import { useToast } from '@/components/ui/use-toast'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 const AppointmentTable = ({
   userId: userUuid,
@@ -43,12 +44,12 @@ const AppointmentTable = ({
     <Table>
       {appointments && appointments.length > 0 ? (
         <TableCaption>
-          Seus agendamentos marcados para hoje (
-          {dayjs(date).format('DD/MM/YYYY')} )
+          Seus agendamentos marcados para
+          {dayjs(date).format('DD/MM/YYYY')}
         </TableCaption>
       ) : (
         <TableCaption>
-          Não há agendament para hoje {dayjs(date).format('DD/MM/YYYY')} )
+          Não há agendament para {dayjs(date).format('DD/MM/YYYY')}
         </TableCaption>
       )}
       <TableHeader>
@@ -79,8 +80,6 @@ const DashboardPage: NextPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const { toast } = useToast()
 
-  // const router = useRouter()
-
   const { user } = useUser()
   if (!user) return null
 
@@ -101,21 +100,31 @@ const DashboardPage: NextPage = () => {
       <Head>
         <title>{user.username ?? user.firstName}</title>
       </Head>
-      <div className="flex max-w-full items-center justify-around p-3">
-        <AppointmentTable userId={user.id} date={selectedDate} />
-        <Calendar
-          mode="single"
-          locale={ptBR}
-          className="border-1 rounded-md font-mono text-sm"
-          selected={selectedDate}
-          onSelect={(date) => {
-            setSelectedDate(date)
-            handleCalendarInput(date)
-          }}
-          disabled={{ before: new Date() }}
-        />
+      <div className="flex max-w-full flex-grow flex-col justify-around  md:p-3 lg:flex-row">
+        <div className="flex  flex-grow flex-col items-stretch lg:items-center ">
+          <h1>Seu calendario</h1>
+          <AppointmentTable userId={user.id} date={selectedDate} />
+        </div>
+
+        <div className="flex flex-col items-center justify-center">
+          <Calendar
+            mode="single"
+            locale={ptBR}
+            className="border-1 rounded-md font-mono text-sm"
+            selected={selectedDate}
+            onSelect={(date) => {
+              setSelectedDate(date)
+              handleCalendarInput(date)
+            }}
+            disabled={{ before: new Date() }}
+          />
+          <Button asChild>
+            <Link href="/dashboard/time-intervals">
+              Alterar disponibilidades
+            </Link>
+          </Button>
+        </div>
       </div>
-      <SignOutButton />
     </>
   )
 }
