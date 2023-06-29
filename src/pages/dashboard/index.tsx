@@ -82,7 +82,7 @@ const DashboardPage: NextPage = () => {
   // const router = useRouter()
 
   const { user } = useUser()
-  if (!user) return <div>404</div>
+  if (!user) return null
 
   const handleCalendarInput = (selectedDate: Date | undefined) => {
     const dateWithTime = dayjs(selectedDate).format('DD/MM/YY')
@@ -101,7 +101,7 @@ const DashboardPage: NextPage = () => {
       <Head>
         <title>{user.username ?? user.firstName}</title>
       </Head>
-      <div className="flex max-w-full items-stretch justify-around p-3">
+      <div className="flex max-w-full items-center justify-around p-3">
         <AppointmentTable userId={user.id} date={selectedDate} />
         <Calendar
           mode="single"

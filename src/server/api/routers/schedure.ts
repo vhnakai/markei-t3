@@ -1,11 +1,14 @@
 import { z } from 'zod'
 import dayjs from 'dayjs'
+import { google } from 'googleapis'
+import { getGoogleOAuthToken } from '@/lib/google'
 
 import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
 } from '@/server/api/trpc'
+import { clerkClient } from '@clerk/nextjs'
 
 export const scheduringRouter = createTRPCRouter({
   schedure: protectedProcedure
@@ -52,34 +55,36 @@ export const scheduringRouter = createTRPCRouter({
         },
       })
 
-      // const calendar = google.calendar({
-      //   version: 'v3',
-      //   auth: await getGoogleOAuthToken(user.id),
-      // })
+      const user = await clerkClient.users.getUser(userUuid)
 
-      // await calendar.events.insert({
-      //   calendarId: 'primary',
-      //   conferenceDataVersion: 1,
-      //   requestBody: {
-      //     summary: `Consulta: ${name}`,
-      //     description: observations,
-      //     start: {
-      //       dateTime: schedulingDate.format(),
-      //     },
-      //     end: {
-      //       dateTime: schedulingDate.add(1, 'hour').format(),
-      //     },
-      //     attendees: [{ email, displayName: name }],
-      //     conferenceData: {
-      //       createRequest: {
-      //         requestId: scheduling.id,
-      //         conferenceSolutionKey: {
-      //           type: 'hangoutsMeet',
-      //         },
-      //       },
-      //     },
-      //   },
-      // })
+      const calendar = google.calendar({
+        version: 'v3',
+        auth: await getGoogleOAuthToken(user.id),
+      })
+
+      await calendar.events.insert({
+        calendarId: 'primary',
+        conferenceDataVersion: 1,
+        requestBody: {
+          summary: `Consulta: ${name}`,
+          description: observations,
+          start: {
+            dateTime: schedulingDate.format(),
+          },
+          end: {
+            dateTime: schedulingDate.add(1, 'hour').format(),
+          },
+          attendees: [{ email, displayName: name }],
+          conferenceData: {
+            createRequest: {
+              requestId: scheduling.id,
+              conferenceSolutionKey: {
+                type: 'hangoutsMeet',
+              },
+            },
+          },
+        },
+      })
 
       return {
         message: 'A new appointment was successfully scheduled.',
