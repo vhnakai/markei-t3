@@ -127,7 +127,7 @@ const DashboardPage: NextPage = () => {
               </Button>
             )}
 
-            {interval && interval.length > 0 && (
+            {!!interval && interval.length > 0 && (
               <Button asChild>
                 <Link href="/dashboard/time-intervals">
                   Alterar disponibilidades
