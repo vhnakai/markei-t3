@@ -79,6 +79,8 @@ const AppointmentTable = ({
 
 const DashboardPage: NextPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
+  const { data: interval } = api.timeInterval.getByUserId.useQuery()
+
   const { toast } = useToast()
 
   const { user } = useUser()
@@ -92,8 +94,6 @@ const DashboardPage: NextPage = () => {
       description: dateWithTime,
     })
   }
-
-  const { data: interval } = api.timeInterval.getByUserId.useQuery()
 
   return (
     <>
@@ -119,18 +119,16 @@ const DashboardPage: NextPage = () => {
             disabled={{ before: new Date() }}
           />
           <div className="flex flex-col justify-between gap-2 sm:flex-row">
-            {!interval && (
-              <Button asChild>
-                <Link href={`/dashboard/time-intervals/${user?.username}`}>
-                  Inserir disponibilidades
-                </Link>
-              </Button>
-            )}
-
-            {!!interval && interval.length > 0 && (
+            {!!interval && interval.length > 0 ? (
               <Button asChild>
                 <Link href="/dashboard/time-intervals">
                   Alterar disponibilidades
+                </Link>
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link href={`/dashboard/time-intervals/${user?.username}`}>
+                  Inserir disponibilidades
                 </Link>
               </Button>
             )}
