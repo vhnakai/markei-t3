@@ -6,7 +6,9 @@ export const filterUserForClient = (user: User) => {
     profileImageUrl: user.profileImageUrl,
     externalUsername:
       user.externalAccounts.find(
-        (externalAccount) => externalAccount.provider === 'oauth_github',
+        (externalAccount) => externalAccount.provider === 'oauth_google',
       )?.username || null,
+    firstName: user.firstName,
+    lastName: user.lastName,
   }
 }

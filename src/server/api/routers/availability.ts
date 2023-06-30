@@ -2,17 +2,19 @@ import { z } from 'zod'
 import dayjs from 'dayjs'
 
 import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc'
+import { clerkClient } from '@clerk/nextjs'
+import { TRPCError } from '@trpc/server'
 
 export const availabilityRouter = createTRPCRouter({
   available: protectedProcedure
     .input(
       z.object({
-        userUuid: z.string(),
+        username: z.string(),
         date: z.date(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { userUuid, date } = input
+      const { username, date } = input
 
       const referenceDate = dayjs(String(date))
       const isPastDate = referenceDate.endOf('day').isBefore(new Date())
@@ -21,9 +23,38 @@ export const availabilityRouter = createTRPCRouter({
         return { possibleTimes: [], availableTimes: [] }
       }
 
+      const [user] = await clerkClient.users.getUserList({
+        username: [username],
+      })
+
+      if (!user) {
+        // if we hit here we need a unsantized username so hit api once more and find the user.
+        const users = await clerkClient.users.getUserList({
+          limit: 200,
+        })
+        const user = users.find((user) =>
+          user.externalAccounts.find(
+            (account) => account.username === input.username,
+          ),
+        )
+        if (!user) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'User not found',
+          })
+        }
+      }
+
+      if (!user) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'User not found',
+        })
+      }
+
       const userAvailability = await ctx.prisma.userTimeInterval.findFirst({
         where: {
-          userId: userUuid,
+          userId: user.id,
           weekDay: referenceDate.get('day'),
         },
       })
@@ -48,7 +79,7 @@ export const availabilityRouter = createTRPCRouter({
           date: true,
         },
         where: {
-          userId: userUuid,
+          userId: user.id,
           date: {
             gte: referenceDate.set('hour', startHour).toDate(),
             lte: referenceDate.set('hour', endHour).toDate(),

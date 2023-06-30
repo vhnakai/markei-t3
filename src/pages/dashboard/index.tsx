@@ -69,7 +69,11 @@ const AppointmentTable = ({
             <TableCell>
               {dayjs(appointment.date).format('DD/MM/YYYY')}
             </TableCell>
-            <TableCell className="text-right">Botao</TableCell>
+            <TableCell className="text-right">
+              <Button variant={'secondary'} asChild>
+                <Link href="/">Sobre</Link>
+              </Button>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -101,7 +105,7 @@ const DashboardPage: NextPage = () => {
         <title>{user.username ?? user.firstName}</title>
       </Head>
       <div className="flex max-w-full flex-grow flex-col justify-around  md:p-3 lg:flex-row">
-        <div className="flex  flex-grow flex-col items-stretch lg:items-center ">
+        <div className="flex flex-grow flex-col items-stretch lg:items-center ">
           <h1>Seu calendario</h1>
           <AppointmentTable userId={user.id} date={selectedDate} />
         </div>
