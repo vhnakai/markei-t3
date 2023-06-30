@@ -21,7 +21,7 @@ export const scheduringRouter = createTRPCRouter({
         date: z.string().datetime(),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { userUuid, name, email, observations, date } = input
 
       const schedulingDate = dayjs(date).startOf('hour')

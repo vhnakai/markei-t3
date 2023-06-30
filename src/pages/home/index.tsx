@@ -2,6 +2,8 @@ import { type NextPage } from 'next'
 import { SignOutButton, SignInButton, useUser } from '@clerk/clerk-react'
 import { Calendar } from '@/components/ui/calendar'
 import { ptBR } from 'date-fns/locale'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 const Home: NextPage = () => {
   const { isSignedIn } = useUser()
@@ -18,8 +20,17 @@ const Home: NextPage = () => {
           no seu tempo livre.
         </p>
 
-        {!isSignedIn && <SignInButton redirectUrl="/dashboard" />}
-        {!!isSignedIn && <SignOutButton />}
+        {!isSignedIn && (
+          <SignInButton redirectUrl="/dashboard" mode="modal">
+            <Button variant={'outline'}>Inscrever-se</Button>
+          </SignInButton>
+        )}
+        {!!isSignedIn && <SignOutButton>Sair</SignOutButton>}
+        {!!isSignedIn && (
+          <Button variant={'link'} asChild>
+            <Link href={'/dashboard'}>Minha agenda</Link>
+          </Button>
+        )}
       </div>
       <Calendar
         mode="single"

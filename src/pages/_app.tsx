@@ -1,5 +1,6 @@
 import { type AppType } from 'next/app'
 import { ClerkProvider } from '@clerk/nextjs'
+import { ptBR } from '@clerk/localizations'
 import { api } from '@/utils/api'
 
 import '@/styles/globals.css'
@@ -8,7 +9,7 @@ import { Toaster } from '@/components/ui/toaster'
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
-    <ClerkProvider {...pageProps}>
+    <ClerkProvider localization={ptBR} {...pageProps}>
       <Head>
         <title>Markei</title>
         <meta

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 /**
  * TO-DO
  * - listagem de agenda baseado no user_id ok
@@ -49,7 +50,7 @@ const AppointmentTable = ({
         </TableCaption>
       ) : (
         <TableCaption>
-          Não há agendament para {dayjs(date).format('DD/MM/YYYY')}
+          Não há agendamento para {dayjs(date).format('DD/MM/YYYY')}
         </TableCaption>
       )}
       <TableHeader>
@@ -90,10 +91,9 @@ const DashboardPage: NextPage = () => {
       title: 'A sua agenda foi filtrada para o dia:',
       description: dateWithTime,
     })
-    /**
-     * Filtrar a lista de agendamentos para a data selecionada
-     */
   }
+
+  const { data: interval } = api.timeInterval.getByUserId.useQuery()
 
   return (
     <>
@@ -118,11 +118,29 @@ const DashboardPage: NextPage = () => {
             }}
             disabled={{ before: new Date() }}
           />
-          <Button asChild>
-            <Link href="/dashboard/time-intervals">
-              Alterar disponibilidades
-            </Link>
-          </Button>
+          <div className="flex flex-col justify-between gap-2 sm:flex-row">
+            {(!interval || interval.length === 0) && (
+              <Button asChild>
+                <Link href={`/dashboard/time-intervals/${user?.username}`}>
+                  Inserir disponibilidades
+                </Link>
+              </Button>
+            )}
+
+            {interval && interval.length > 0 && (
+              <Button asChild>
+                <Link href="/dashboard/time-intervals">
+                  Alterar disponibilidades
+                </Link>
+              </Button>
+            )}
+
+            <Button asChild>
+              <Link href={`/schedule/${user?.username}`}>
+                marcar um agendamento
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </>

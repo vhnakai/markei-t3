@@ -10,7 +10,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@clerk/localizations": "^1.16.0",
+    "@clerk/localizations": "^1.22.0",
     "@clerk/nextjs": "^4.19.0",
     "@hookform/resolvers": "^3.1.1",
     "@prisma/client": "^4.16.1",

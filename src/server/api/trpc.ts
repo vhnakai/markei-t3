@@ -15,7 +15,6 @@
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
 import { type CreateNextContextOptions } from '@trpc/server/adapters/next'
-import { getAuth } from '@clerk/nextjs/server'
 
 import { prisma } from '@/server/db'
 
@@ -27,6 +26,7 @@ import { prisma } from '@/server/db'
  * errors on the backend.
  */
 import { initTRPC, TRPCError } from '@trpc/server'
+import { getAuth } from '@clerk/nextjs/server'
 import superjson from 'superjson'
 import { ZodError } from 'zod'
 
@@ -42,7 +42,7 @@ export const createTRPCContext = (opts: CreateNextContextOptions) => {
 
   return {
     prisma,
-    session: user,
+    userId: user.userId,
   }
 }
 
@@ -84,14 +84,13 @@ export const createTRPCRouter = t.router
 export const publicProcedure = t.procedure
 
 /** Reusable middleware that enforces users are logged in before running the procedure. */
-const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user) {
+const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.userId) {
     throw new TRPCError({ code: 'UNAUTHORIZED' })
   }
   return next({
     ctx: {
-      // infers the `session` as non-nullable
-      session: { ...ctx.session, user: ctx.session.user },
+      userId: ctx.userId,
     },
   })
 })

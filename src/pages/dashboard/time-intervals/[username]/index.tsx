@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { zodResolver } from '@hookform/resolvers/zod'
+import { generateSSGHelper } from '@/server/helper/ssgHelper'
+import { type NextPage, type GetStaticProps } from 'next'
 
 import { NextSeo } from 'next-seo'
+import { useRouter } from 'next/router'
 import { Check } from 'lucide-react'
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -14,7 +17,6 @@ import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useRouter } from 'next/router'
 
 const timeIntervalsFormSchema = z.object({
   intervals: z
@@ -57,17 +59,14 @@ const timeIntervalsFormSchema = z.object({
 type TimeIntervalsFormInput = z.input<typeof timeIntervalsFormSchema>
 type TimeIntervalsFormOutput = z.output<typeof timeIntervalsFormSchema>
 
-export default function TimeIntervals() {
+const TimeIntervals: NextPage<{ username: string }> = ({ username }) => {
   const { toast } = useToast()
   const router = useRouter()
 
-  const { mutate, data } = api.timeInterval.update.useMutation({
+  const { mutate, data } = api.timeInterval.create.useMutation({
     onSuccess: () => {
       toast({
-        description: data?.message
-          ? data.message
-          : 'seus intervalos foram atualizados',
-        duration: 6000,
+        description: data?.message,
       })
     },
     onError: (e) => {
@@ -75,67 +74,23 @@ export default function TimeIntervals() {
       if (errorMessage && errorMessage[0]) {
         toast({ description: errorMessage[0] })
       } else {
-        toast({
-          description:
-            'Failed to set up your intervals! Please try again later.',
-        })
+        toast({ description: 'Failed to post! Please try again later.' })
       }
     },
   })
 
-  const { data: interval } = api.timeInterval.getByUserId.useQuery()
-
-  const formatedIntervals =
-    interval?.map((int) => {
-      const start = `${String(int.timeStartInMinutes / 60).padStart(
-        2,
-        '0',
-      )}:${String(int.timeStartInMinutes % 60).padStart(2, '0')}`
-      const end = `${String(int.timeEndInMinutes / 60).padStart(
-        2,
-        '0',
-      )}:${String(int.timeEndInMinutes % 60).padStart(2, '0')}`
-      return {
-        weekDay: int.weekDay,
-        enabled: !!int.enabled,
-        startTime: start,
-        endTime: end,
-      }
-    }) || []
-
-  const def = [
-    {
-      weekDay: 0,
-      enabled: false,
-      startTime: '08:00',
-      endTime: '18:00',
-    },
-    { weekDay: 1, enabled: true, startTime: '08:00', endTime: '18:00' },
-    { weekDay: 2, enabled: true, startTime: '08:00', endTime: '18:00' },
-    { weekDay: 3, enabled: true, startTime: '08:00', endTime: '18:00' },
-    { weekDay: 4, enabled: true, startTime: '08:00', endTime: '18:00' },
-    { weekDay: 5, enabled: true, startTime: '08:00', endTime: '18:00' },
-    {
-      weekDay: 6,
-      enabled: false,
-      startTime: '08:00',
-      endTime: '18:00',
-    },
-  ]
-
-  const merge = def
-    .map((defVal) => {
-      const res = formatedIntervals.filter(
-        (inter) => inter.weekDay === defVal.weekDay,
-      )
-      return res[0] ? { ...defVal, ...res[0] } : defVal
-    })
-    .sort((def, int) => def.weekDay - int.weekDay)
-
   const form = useForm<TimeIntervalsFormInput>({
     resolver: zodResolver(timeIntervalsFormSchema),
     defaultValues: {
-      intervals: merge,
+      intervals: [
+        { weekDay: 0, enabled: false, startTime: '08:00', endTime: '18:00' },
+        { weekDay: 1, enabled: true, startTime: '08:00', endTime: '18:00' },
+        { weekDay: 2, enabled: true, startTime: '08:00', endTime: '18:00' },
+        { weekDay: 3, enabled: true, startTime: '08:00', endTime: '18:00' },
+        { weekDay: 4, enabled: true, startTime: '08:00', endTime: '18:00' },
+        { weekDay: 5, enabled: true, startTime: '08:00', endTime: '18:00' },
+        { weekDay: 6, enabled: false, startTime: '08:00', endTime: '18:00' },
+      ],
     },
   })
 
@@ -160,6 +115,7 @@ export default function TimeIntervals() {
     const { intervals } = data as TimeIntervalsFormOutput
 
     mutate(intervals)
+
     await router.push('/dashboard')
   }
 
@@ -239,3 +195,26 @@ export default function TimeIntervals() {
     </>
   )
 }
+
+export const getStaticPaths = () => {
+  return { paths: [], fallback: 'blocking' }
+}
+
+export const getStaticProps: GetStaticProps = async (context) => {
+  const ssg = generateSSGHelper()
+  const username = context.params?.username
+
+  if (typeof username !== 'string') throw new Error('Sem usuario')
+
+  await ssg.timeInterval.getByUserId.prefetch()
+
+  return {
+    props: {
+      trpcState: ssg.dehydrate(),
+      username,
+    },
+    revalidate: 60 * 60 * 24, // 1 day
+  }
+}
+
+export default TimeIntervals

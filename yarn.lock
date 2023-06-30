@@ -52,12 +52,12 @@
     snakecase-keys "3.2.1"
     tslib "2.4.1"
 
-"@clerk/localizations@^1.16.0":
-  version "1.21.0"
-  resolved "https://registry.yarnpkg.com/@clerk/localizations/-/localizations-1.21.0.tgz#0e36f0244f8a0a204f1d7d8841a7f5bd59d46f0c"
-  integrity sha512-2ZJegCPcpFC0WTK43kNX65v5QFDv60smlQ0DX4IuvnHJbLm8qw9s54NwYoozUwMPEkAaI0EGT7sl79y22tMfJQ==
+"@clerk/localizations@^1.22.0":
+  version "1.22.0"
+  resolved "https://registry.yarnpkg.com/@clerk/localizations/-/localizations-1.22.0.tgz#29ed5e976539b21f83eeb9a93f98747a7706a5fe"
+  integrity sha512-iCU3ccNSOTjg8QMfwq6jkM3/fuF2jxuwOFDt/8/TFNHyemWFpqpAA5lpqJeS7G1nl0lLM23643DUd5JdGhri/Q==
   dependencies:
-    "@clerk/types" "^3.46.0"
+    "@clerk/types" "^3.46.1"
 
 "@clerk/nextjs@^4.19.0":
   version "4.21.8"
@@ -84,6 +84,13 @@
   version "3.46.0"
   resolved "https://registry.yarnpkg.com/@clerk/types/-/types-3.46.0.tgz#60df5da46479db9f0ff735cb6e07906b49869f3f"
   integrity sha512-IooGZ64uARKg+GS6b38usrWqhzU0PcrDbZBaZm4JmtYd5CZbWABklBNkiXQhnnaKYdvHr5K8vhJd5spsJarNpw==
+  dependencies:
+    csstype "3.1.1"
+
+"@clerk/types@^3.46.1":
+  version "3.46.1"
+  resolved "https://registry.yarnpkg.com/@clerk/types/-/types-3.46.1.tgz#7ad5b2852c111127ff9ac388f02b5d3393b50cae"
+  integrity sha512-IA/iSXJJZym4Z6f9OcT9OJayK2opVhxUVJky15aY4iVsJCPScgApBuuzC7N4vfXwA6RI/wGebFbvmsEQ3oI/UA==
   dependencies:
     csstype "3.1.1"
 
