@@ -14,9 +14,9 @@ model UserTimeInterval {
   timeStartInMinutes Int
   timeEndInMinutes   Int
   userId             String
-  enabled            Boolean
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+  enabled            Boolean
 
   @@index([userId])
   @@map("user_time_intervals")
