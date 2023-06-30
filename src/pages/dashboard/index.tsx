@@ -119,7 +119,7 @@ const DashboardPage: NextPage = () => {
             disabled={{ before: new Date() }}
           />
           <div className="flex flex-col justify-between gap-2 sm:flex-row">
-            {(!interval || interval.length === 0) && (
+            {!interval && (
               <Button asChild>
                 <Link href={`/dashboard/time-intervals/${user?.username}`}>
                   Inserir disponibilidades
