@@ -18,6 +18,7 @@ import dayjs from 'dayjs'
 import { type NextPage, type GetStaticProps } from 'next'
 import { NextSeo } from 'next-seo'
 import { useState } from 'react'
+import ErrorPage from 'next/error'
 
 const Schedule: NextPage<{ username: string }> = ({ username }) => {
   const { data } = api.profile.getUserByUsername.useQuery({ username })
@@ -25,12 +26,13 @@ const Schedule: NextPage<{ username: string }> = ({ username }) => {
   const [selectedDateTime, setSelectedDateTime] = useState<Date | null>()
   const [openFormModal, setOpenFormModal] = useState(false)
 
-  if (!data) return <div> 404</div>
+  if (!data) return <ErrorPage statusCode={404} />
 
-  const { data: availability } = api.availability.available.useQuery({
-    date: selectedDate || new Date(),
-    username,
-  })
+  const { data: availability } =
+    api.availability.getTimesByUserIdAndDate.useQuery({
+      date: selectedDate,
+      userId: data.id,
+    })
 
   const isDateSelected = !!selectedDate
 
@@ -79,7 +81,7 @@ const Schedule: NextPage<{ username: string }> = ({ username }) => {
                         variant={'outline'}
                         key={hour}
                         onClick={() => handleSelectTime(hour)}
-                        disabled={availability.availableTimes.includes(hour)}
+                        disabled={!availability.availableTimes.includes(hour)}
                       >
                         {String(hour).padStart(2, '0')}:00h
                       </Button>
@@ -150,7 +152,6 @@ export const getStaticProps: GetStaticProps = async (context) => {
       trpcState: ssg.dehydrate(),
       username,
     },
-    revalidate: 60 * 60 * 24, // 1 day
   }
 }
 

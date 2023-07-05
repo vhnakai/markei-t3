@@ -59,7 +59,7 @@ const timeIntervalsFormSchema = z.object({
 type TimeIntervalsFormInput = z.input<typeof timeIntervalsFormSchema>
 type TimeIntervalsFormOutput = z.output<typeof timeIntervalsFormSchema>
 
-const TimeIntervals: NextPage<{ username: string }> = ({ username }) => {
+const TimeIntervals: NextPage<{ username: string }> = () => {
   const { toast } = useToast()
   const router = useRouter()
 

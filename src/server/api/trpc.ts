@@ -40,9 +40,11 @@ export const createTRPCContext = (opts: CreateNextContextOptions) => {
   const { req } = opts
   const user = getAuth(req)
 
+  const userId = user.userId
+
   return {
     prisma,
-    userId: user.userId,
+    userId,
   }
 }
 

@@ -28,6 +28,7 @@ import {
 import { useToast } from '@/components/ui/use-toast'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import ErrorPage from 'next/error'
 
 const AppointmentTable = ({
   userId: userUuid,
@@ -88,7 +89,7 @@ const DashboardPage: NextPage = () => {
   const { toast } = useToast()
 
   const { user } = useUser()
-  if (!user) return null
+  if (!user) return <ErrorPage statusCode={404} />
 
   const handleCalendarInput = (selectedDate: Date | undefined) => {
     const dateWithTime = dayjs(selectedDate).format('DD/MM/YY')
