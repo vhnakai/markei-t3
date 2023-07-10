@@ -101,6 +101,7 @@ const Schedule: NextPage<{ username: string }> = ({ username }) => {
       observations,
     })
 
+    form.reset()
     setOpenFormModal(false)
   }
 
