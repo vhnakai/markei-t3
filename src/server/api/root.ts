@@ -2,7 +2,7 @@ import { createTRPCRouter } from '@/server/api/trpc'
 import { exampleRouter } from '@/server/api/routers/example'
 import { availabilityRouter } from '@/server/api/routers/availability'
 import { blockedDatesrouter } from '@/server/api/routers/blocked-dates'
-import { scheduringRouter } from '@/server/api/routers/schedure'
+import { scheduringRouter } from '@/server/api/routers/schedule'
 import { profileRouter } from './routers/profile'
 import { timeIntervalsRouter } from './routers/time-intervals'
 
@@ -15,7 +15,7 @@ export const appRouter = createTRPCRouter({
   example: exampleRouter,
   availability: availabilityRouter,
   blockedDates: blockedDatesrouter,
-  schedure: scheduringRouter,
+  schedule: scheduringRouter,
   profile: profileRouter,
   timeInterval: timeIntervalsRouter,
 })

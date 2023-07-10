@@ -1,23 +1,19 @@
 import { z } from 'zod'
 import dayjs from 'dayjs'
-import { google } from 'googleapis'
-import { getGoogleOAuthToken } from '@/lib/google'
+// import { google } from 'googleapis'
+// import { getGoogleOAuthToken } from '@/lib/google'
 
-import {
-  createTRPCRouter,
-  publicProcedure,
-  protectedProcedure,
-} from '@/server/api/trpc'
-import { clerkClient } from '@clerk/nextjs'
+import { createTRPCRouter, publicProcedure } from '@/server/api/trpc'
+// import { clerkClient } from '@clerk/nextjs'
 
 export const scheduringRouter = createTRPCRouter({
-  schedure: protectedProcedure
+  schedule: publicProcedure
     .input(
       z.object({
         userUuid: z.string(),
         name: z.string(),
         email: z.string().email(),
-        observations: z.string(),
+        observations: z.string().nullable(),
         date: z.string().datetime(),
       }),
     )
@@ -55,40 +51,40 @@ export const scheduringRouter = createTRPCRouter({
         },
       })
 
-      const user = await clerkClient.users.getUser(userUuid)
+      // const user = await clerkClient.users.getUser(userUuid)
 
-      const calendar = google.calendar({
-        version: 'v3',
-        auth: await getGoogleOAuthToken(user.id),
-      })
+      // const calendar = google.calendar({
+      //   version: 'v3',
+      //   auth: await getGoogleOAuthToken(user.id),
+      // })
 
-      await calendar.events.insert({
-        calendarId: 'primary',
-        conferenceDataVersion: 1,
-        requestBody: {
-          summary: `Consulta: ${name}`,
-          description: observations,
-          start: {
-            dateTime: schedulingDate.format(),
-          },
-          end: {
-            dateTime: schedulingDate.add(1, 'hour').format(),
-          },
-          attendees: [{ email, displayName: name }],
-          conferenceData: {
-            createRequest: {
-              requestId: scheduling.id,
-              conferenceSolutionKey: {
-                type: 'hangoutsMeet',
-              },
-            },
-          },
-        },
-      })
+      // await calendar.events.insert({
+      //   calendarId: 'primary',
+      //   conferenceDataVersion: 1,
+      //   requestBody: {
+      //     summary: `Consulta: ${name}`,
+      //     description: observations,
+      //     start: {
+      //       dateTime: schedulingDate.format(),
+      //     },
+      //     end: {
+      //       dateTime: schedulingDate.add(1, 'hour').format(),
+      //     },
+      //     attendees: [{ email, displayName: name }],
+      //     conferenceData: {
+      //       createRequest: {
+      //         requestId: scheduling.id,
+      //         conferenceSolutionKey: {
+      //           type: 'hangoutsMeet',
+      //         },
+      //       },
+      //     },
+      //   },
+      // })
 
       return {
         message: 'A new appointment was successfully scheduled.',
-        schedureId: scheduling.id,
+        scheduleId: scheduling.id,
       }
     }),
   appointments: publicProcedure

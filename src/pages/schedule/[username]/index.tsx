@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -19,12 +20,32 @@ import { type NextPage, type GetStaticProps } from 'next'
 import { NextSeo } from 'next-seo'
 import { useState } from 'react'
 import ErrorPage from 'next/error'
+import { Form } from '@/components/ui/form'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Textarea } from '@/components/ui/textarea'
+import { useToast } from '@/components/ui/use-toast'
+
+const scheduleFormSchema = z.object({
+  name: z.string().min(3, { message: 'O nome precisa no mínimo 3 caracteres' }),
+  email: z.string().email({ message: 'Digite um e-mail válido' }),
+  observations: z.string().nullable(),
+})
+
+type ScheduleFormData = z.infer<typeof scheduleFormSchema>
 
 const Schedule: NextPage<{ username: string }> = ({ username }) => {
   const { data } = api.profile.getUserByUsername.useQuery({ username })
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
-  const [selectedDateTime, setSelectedDateTime] = useState<Date | null>()
+  const [selectedDateTime, setSelectedDateTime] = useState<Date | null>(null)
   const [openFormModal, setOpenFormModal] = useState(false)
+
+  const form = useForm<ScheduleFormData>({
+    resolver: zodResolver(scheduleFormSchema),
+  })
+
+  const { toast } = useToast()
 
   if (!data) return <ErrorPage statusCode={404} />
 
@@ -46,11 +67,54 @@ const Schedule: NextPage<{ username: string }> = ({ username }) => {
     setOpenFormModal(true)
   }
 
+  const userId = data.id
+
+  const { mutate, data: schedule } = api.schedule.schedule.useMutation({
+    onSuccess: () => {
+      toast({ description: schedule?.message })
+    },
+    onError: (e) => {
+      const errorMessage = e.data?.zodError?.fieldErrors.content
+      if (errorMessage && errorMessage[0]) {
+        toast({ description: errorMessage[0] })
+      } else {
+        toast({
+          description:
+            'Infelizmente não foi possivel de agendar, tente novamente mais tarde..',
+        })
+      }
+    },
+  })
+
+  function handleScheduleSubmit({
+    name,
+    email,
+    observations,
+  }: ScheduleFormData) {
+    const formattedDatetime = dayjs(selectedDateTime).toISOString()
+
+    mutate({
+      userUuid: userId,
+      date: formattedDatetime,
+      name,
+      email,
+      observations,
+    })
+
+    setOpenFormModal(false)
+  }
+
+  const {
+    register,
+    handleSubmit,
+    formState: { isSubmitting, errors },
+  } = form
+
   return (
     <>
       <NextSeo title={`Agendar com ${username}`} />
       <main className="overflow-none flex h-screen justify-center">
-        <div className="flex h-full w-full flex-col items-center justify-center gap-3 md:max-w-2xl">
+        <div className="flex h-full w-screen flex-col items-center justify-center gap-3">
           <h1 className="text-4xl">
             {data.firstName?.toLocaleUpperCase()}{' '}
             {data.lastName?.toLocaleUpperCase()}
@@ -65,66 +129,93 @@ const Schedule: NextPage<{ username: string }> = ({ username }) => {
               locale={ptBR}
               className="border-1 rounded-md font-mono text-sm"
               selected={selectedDate}
-              onSelect={(date) => {
-                setSelectedDate(date)
-                // handleCalendarInput(date)
-              }}
+              onSelect={setSelectedDate}
               disabled={{ before: new Date() }}
             />
 
-            {isDateSelected && (
-              <div className="h-72 w-72 overflow-auto border-2 border-solid px-6 pb-0 pt-6 lg:w-auto">
-                <div className="mt-3 grid grid-cols-1 gap-2 max-lg:grid-cols-2">
-                  {availability?.possibleTimes.map((hour) => {
-                    return (
-                      <Button
-                        variant={'outline'}
-                        key={hour}
-                        onClick={() => handleSelectTime(hour)}
-                        disabled={!availability.availableTimes.includes(hour)}
-                      >
-                        {String(hour).padStart(2, '0')}:00h
-                      </Button>
-                    )
-                  })}
+            {isDateSelected &&
+              (availability && availability.possibleTimes.length > 0 ? (
+                <div className="max-h-72 w-72 overflow-auto px-6 pb-0 pt-6">
+                  <div className="mt-3 grid grid-cols-2 gap-2 ">
+                    {availability.possibleTimes.map((hour) => {
+                      return (
+                        <Button
+                          variant={'outline'}
+                          key={hour}
+                          onClick={() => handleSelectTime(hour)}
+                          disabled={!availability.availableTimes.includes(hour)}
+                        >
+                          {String(hour).padStart(2, '0')}:00h
+                        </Button>
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="flex h-full max-h-72 w-72 flex-col items-center justify-center overflow-auto  px-6 pb-0 pt-6 lg:w-full ">
+                  <p>Não temos horarios disponiveis</p>
+                </div>
+              ))}
 
             {selectedDateTime && (
               <Dialog open={openFormModal} onOpenChange={setOpenFormModal}>
                 <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Falta mais um pouco</DialogTitle>
-                    <DialogDescription>
-                      Preencha essas informações para agendar
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="name" className="text-right">
-                        Name
-                      </Label>
-                      <Input
-                        id="name"
-                        value="Pedro Duarte"
-                        className="col-span-3"
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="username" className="text-right">
-                        Username
-                      </Label>
-                      <Input
-                        id="username"
-                        value="@peduarte"
-                        className="col-span-3"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit">Save changes</Button>
-                  </DialogFooter>
+                  <Form {...form}>
+                    <DialogHeader>
+                      <DialogTitle>Falta mais um pouco</DialogTitle>
+                      <DialogDescription>
+                        Preencha essas informações para agendar
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmit(handleScheduleSubmit)}>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="name" className="text-right">
+                            Nome Completo
+                          </Label>
+                          <Input
+                            id="name"
+                            placeholder="Seu nome"
+                            className="col-span-3"
+                            {...register('name')}
+                          />
+                          {errors.name && (
+                            <p className="text-sm">{errors.name.message}</p>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="email" className="text-right">
+                            E-mail
+                          </Label>
+                          <Input
+                            id="email"
+                            placeholder="johndoe@example.com"
+                            className="col-span-3"
+                            {...register('email')}
+                          />
+                          {errors.email && (
+                            <p className="text-sm">{errors.email.message}</p>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                          <Label htmlFor="observations" className="text-right">
+                            Observações
+                          </Label>
+                          <Textarea
+                            id="observations"
+                            placeholder="Escreva alguma observação"
+                            className="col-span-3"
+                            {...register('observations')}
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit" disabled={isSubmitting}>
+                          Save changes
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </Form>
                 </DialogContent>
               </Dialog>
             )}

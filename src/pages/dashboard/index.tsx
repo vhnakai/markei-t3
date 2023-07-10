@@ -37,7 +37,7 @@ const AppointmentTable = ({
   userId: string
   date: Date | undefined
 }) => {
-  const { data: appointments } = api.schedure.appointments.useQuery({
+  const { data: appointments } = api.schedule.appointments.useQuery({
     userUuid,
     date,
   })

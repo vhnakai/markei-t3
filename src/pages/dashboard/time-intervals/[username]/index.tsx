@@ -74,7 +74,7 @@ const TimeIntervals: NextPage<{ username: string }> = () => {
       if (errorMessage && errorMessage[0]) {
         toast({ description: errorMessage[0] })
       } else {
-        toast({ description: 'Failed to post! Please try again later.' })
+        toast({ description: 'Failed to create! Please try again later.' })
       }
     },
   })
