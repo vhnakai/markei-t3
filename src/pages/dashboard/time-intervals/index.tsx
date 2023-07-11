@@ -61,12 +61,10 @@ export default function TimeIntervals() {
   const { toast } = useToast()
   const router = useRouter()
 
-  const { mutate, data } = api.timeInterval.update.useMutation({
-    onSuccess: () => {
+  const { mutate } = api.timeInterval.update.useMutation({
+    onSuccess: (data) => {
       toast({
-        description: data?.message
-          ? data.message
-          : 'seus intervalos foram atualizados',
+        description: data.message,
         duration: 6000,
       })
     },
@@ -76,8 +74,7 @@ export default function TimeIntervals() {
         toast({ description: errorMessage[0] })
       } else {
         toast({
-          description:
-            'Failed to set up your intervals! Please try again later.',
+          description: e.message,
         })
       }
     },

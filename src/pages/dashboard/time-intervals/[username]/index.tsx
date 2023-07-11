@@ -63,10 +63,10 @@ const TimeIntervals: NextPage<{ username: string }> = () => {
   const { toast } = useToast()
   const router = useRouter()
 
-  const { mutate, data } = api.timeInterval.create.useMutation({
-    onSuccess: () => {
+  const { mutate } = api.timeInterval.create.useMutation({
+    onSuccess: (data) => {
       toast({
-        description: data?.message,
+        description: data.message,
       })
     },
     onError: (e) => {
@@ -74,7 +74,7 @@ const TimeIntervals: NextPage<{ username: string }> = () => {
       if (errorMessage && errorMessage[0]) {
         toast({ description: errorMessage[0] })
       } else {
-        toast({ description: 'Failed to create! Please try again later.' })
+        toast({ description: e.message })
       }
     },
   })

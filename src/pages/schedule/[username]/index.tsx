@@ -20,7 +20,7 @@ import { type NextPage, type GetStaticProps } from 'next'
 import { NextSeo } from 'next-seo'
 import { useState } from 'react'
 import ErrorPage from 'next/error'
-import { Form } from '@/components/ui/form'
+import { Form, FormDescription } from '@/components/ui/form'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -69,9 +69,10 @@ const Schedule: NextPage<{ username: string }> = ({ username }) => {
 
   const userId = data.id
 
-  const { mutate, data: schedule } = api.schedule.schedule.useMutation({
-    onSuccess: () => {
-      toast({ description: schedule?.message })
+  const { mutate } = api.schedule.schedule.useMutation({
+    onSuccess: (schedule) => {
+      form.reset()
+      toast({ description: schedule.message })
     },
     onError: (e) => {
       const errorMessage = e.data?.zodError?.fieldErrors.content
@@ -79,8 +80,7 @@ const Schedule: NextPage<{ username: string }> = ({ username }) => {
         toast({ description: errorMessage[0] })
       } else {
         toast({
-          description:
-            'Infelizmente não foi possivel de agendar, tente novamente mais tarde..',
+          description: e.message,
         })
       }
     },
@@ -101,7 +101,6 @@ const Schedule: NextPage<{ username: string }> = ({ username }) => {
       observations,
     })
 
-    form.reset()
     setOpenFormModal(false)
   }
 
@@ -181,7 +180,9 @@ const Schedule: NextPage<{ username: string }> = ({ username }) => {
                             {...register('name')}
                           />
                           {errors.name && (
-                            <p className="text-sm">{errors.name.message}</p>
+                            <FormDescription>
+                              {errors.name.message}
+                            </FormDescription>
                           )}
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
@@ -195,7 +196,9 @@ const Schedule: NextPage<{ username: string }> = ({ username }) => {
                             {...register('email')}
                           />
                           {errors.email && (
-                            <p className="text-sm">{errors.email.message}</p>
+                            <FormDescription>
+                              {errors.email.message}
+                            </FormDescription>
                           )}
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">

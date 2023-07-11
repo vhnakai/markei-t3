@@ -6,13 +6,23 @@ import dayjs from 'dayjs'
 import { createTRPCRouter, publicProcedure } from '@/server/api/trpc'
 // import { clerkClient } from '@clerk/nextjs'
 
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
+import { TRPCError } from '@trpc/server'
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(3, '1 m'),
+  analytics: true,
+})
+
 export const scheduringRouter = createTRPCRouter({
   schedule: publicProcedure
     .input(
       z.object({
         userUuid: z.string(),
         name: z.string(),
-        email: z.string().email(),
+        email: z.string().email().toLowerCase(),
         observations: z.string().nullable(),
         date: z.string().datetime(),
       }),
@@ -23,9 +33,10 @@ export const scheduringRouter = createTRPCRouter({
       const schedulingDate = dayjs(date).startOf('hour')
 
       if (schedulingDate.isBefore(new Date())) {
-        return {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
           message: 'Date is in the past.',
-        }
+        })
       }
 
       const conflictingScheduling = await ctx.prisma.scheduling.findFirst({
@@ -36,10 +47,37 @@ export const scheduringRouter = createTRPCRouter({
       })
 
       if (conflictingScheduling) {
-        return {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
           message: 'There is another scheduling at at the same time.',
-        }
+        })
       }
+
+      // same person scheduring in same day
+
+      const samePersonScheduling = await ctx.prisma.scheduling.findFirst({
+        where: {
+          userId: userUuid,
+          email,
+          AND: [
+            {
+              date: {
+                lte: schedulingDate.endOf('day').toDate(),
+              },
+            },
+          ],
+        },
+      })
+
+      if (samePersonScheduling) {
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: 'There is another scheduling to a same person.',
+        })
+      }
+
+      const { success } = await ratelimit.limit(userUuid)
+      if (!success) throw new TRPCError({ code: 'TOO_MANY_REQUESTS' })
 
       const scheduling = await ctx.prisma.scheduling.create({
         data: {
