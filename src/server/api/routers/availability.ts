@@ -2,6 +2,7 @@ import { z } from 'zod'
 import dayjs from 'dayjs'
 
 import { createTRPCRouter, publicProcedure } from '@/server/api/trpc'
+import { TRPCError } from '@trpc/server'
 
 export const availabilityRouter = createTRPCRouter({
   getTimesByUserIdAndDate: publicProcedure
@@ -14,6 +15,12 @@ export const availabilityRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { userId, date } = input
 
+      if (!date) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Date no provided.',
+        })
+      }
       const referenceDate = dayjs(String(date))
       const isPastDate = referenceDate.endOf('day').isBefore(new Date())
 
