@@ -2,6 +2,7 @@ import dayjs from 'dayjs'
 import { google } from 'googleapis'
 import { clerkClient } from '@clerk/nextjs'
 import { env } from '@/env.mjs'
+import { TRPCError } from '@trpc/server'
 
 export async function getGoogleOAuthToken(userId: string) {
   const tokens = await clerkClient.users.getUserOauthAccessToken(
@@ -9,9 +10,20 @@ export async function getGoogleOAuthToken(userId: string) {
     'oauth_google',
   )
 
-  const accessToken = tokens.find(
+  const filteredToken = tokens.filter(
     (token) => token.provider === 'oauth_google' ?? token.token,
-  )?.token
+  )
+
+  const accessToken = filteredToken.find(
+    (token) => token.provider === 'oauth_google' ?? token.token,
+  )
+
+  if (!accessToken) {
+    throw new TRPCError({
+      code: 'BAD_REQUEST',
+      message: 'Token no provided.',
+    })
+  }
 
   const auth = new google.auth.OAuth2(
     env.GOOGLE_CLIENT_ID,
@@ -19,7 +31,8 @@ export async function getGoogleOAuthToken(userId: string) {
   )
 
   auth.setCredentials({
-    access_token: accessToken || null,
+    access_token: accessToken.token,
+    expiry_date: 604800000,
   })
 
   const session = await clerkClient.sessions.getSession(userId)

@@ -1,10 +1,10 @@
 import { z } from 'zod'
 import dayjs from 'dayjs'
-import { google } from 'googleapis'
-import { getGoogleOAuthToken } from '@/lib/google'
-
-import { createTRPCRouter, publicProcedure } from '@/server/api/trpc'
-import { clerkClient } from '@clerk/nextjs'
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from '@/server/api/trpc'
 
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
@@ -53,8 +53,6 @@ export const scheduringRouter = createTRPCRouter({
         })
       }
 
-      // same person scheduring in same day
-
       const samePersonScheduling = await ctx.prisma.scheduling.findFirst({
         where: {
           userId: userUuid,
@@ -63,6 +61,7 @@ export const scheduringRouter = createTRPCRouter({
             {
               date: {
                 lte: schedulingDate.endOf('day').toDate(),
+                gt: schedulingDate.startOf('day').toDate(),
               },
             },
           ],
@@ -89,51 +88,30 @@ export const scheduringRouter = createTRPCRouter({
         },
       })
 
-      const user = await clerkClient.users.getUser(userUuid)
-
-      const calendar = google.calendar({
-        version: 'v3',
-        auth: await getGoogleOAuthToken(user.id),
-      })
-
-      await calendar.events.insert({
-        calendarId: 'primary',
-        conferenceDataVersion: 1,
-        requestBody: {
-          summary: `Consulta: ${name}`,
-          description: observations,
-          start: {
-            dateTime: schedulingDate.format(),
-          },
-          end: {
-            dateTime: schedulingDate.add(1, 'hour').format(),
-          },
-          attendees: [{ email, displayName: name }],
-          conferenceData: {
-            createRequest: {
-              requestId: scheduling.id,
-              conferenceSolutionKey: {
-                type: 'hangoutsMeet',
-              },
-            },
-          },
-        },
-      })
-
       return {
         message: 'A new appointment was successfully scheduled.',
         scheduleId: scheduling.id,
       }
     }),
-  appointments: publicProcedure
+  appointments: protectedProcedure
     .input(
       z.object({
-        userUuid: z.string(),
         date: z.date().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { userUuid, date } = input
+      const { date } = input
+
+      const { userId } = ctx
+
+      if (!userId) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Not Logged.',
+        })
+      }
+
+      const formattedDate = dayjs(date).startOf('day')
 
       const appointments = await ctx.prisma.scheduling.findMany({
         select: {
@@ -142,8 +120,15 @@ export const scheduringRouter = createTRPCRouter({
           observations: true,
         },
         where: {
-          userId: userUuid,
-          date: date || new Date(),
+          userId,
+          AND: [
+            {
+              date: {
+                lte: formattedDate.endOf('day').toDate(),
+                gt: formattedDate.startOf('day').toDate(),
+              },
+            },
+          ],
         },
         orderBy: {
           date: 'asc',
