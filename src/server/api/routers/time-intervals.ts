@@ -25,7 +25,7 @@ export const timeIntervalsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const intervals = input
 
-      const userId = ctx.userId
+      const userId = ctx.auth.userId
 
       await Promise.all(
         intervals.map((interval) => {
@@ -57,7 +57,7 @@ export const timeIntervalsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const newIntervals = input
 
-      const userId = ctx.userId
+      const userId = ctx.auth.userId
 
       const intervals = await ctx.prisma.userTimeInterval.findMany({
         where: { userId },
@@ -109,7 +109,7 @@ export const timeIntervalsRouter = createTRPCRouter({
       return { message: 'Yours intervals was successfully alocate.' }
     }),
   getByUserId: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.userId
+    const userId = ctx.auth.userId
 
     const intervals = await ctx.prisma.userTimeInterval.findMany({
       select: {

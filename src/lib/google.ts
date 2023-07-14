@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 import { google } from 'googleapis'
-import { clerkClient } from '@clerk/nextjs'
+import { clerkClient } from '@clerk/nextjs/server'
 import { env } from '@/env.mjs'
 import { TRPCError } from '@trpc/server'
 
@@ -9,6 +9,19 @@ export async function getGoogleOAuthToken(userId: string) {
     userId,
     'oauth_google',
   )
+
+  const { externalAccounts } = await clerkClient.users.getUser(userId)
+
+  const filteredAccont = externalAccounts.filter(
+    (acc) => acc.provider === 'oauth_google' ?? acc,
+  )
+
+  const verification = filteredAccont.find(
+    (acc) =>
+      (acc.provider === 'oauth_google' &&
+        acc.approvedScopes === 'https://www.googleapis.com/auth/calendar') ??
+      acc,
+  )?.verification
 
   const filteredToken = tokens.filter(
     (token) => token.provider === 'oauth_google' ?? token.token,
@@ -26,13 +39,13 @@ export async function getGoogleOAuthToken(userId: string) {
   }
 
   const auth = new google.auth.OAuth2(
-    env.GOOGLE_CLIENT_ID,
-    env.GOOGLE_CLIENT_SECRET,
+    env.GOOGLE_CLIENT_ID ?? '',
+    env.GOOGLE_CLIENT_SECRET ?? '',
   )
 
   auth.setCredentials({
     access_token: accessToken.token,
-    expiry_date: 604800000,
+    expiry_date: verification?.expireAt,
   })
 
   const session = await clerkClient.sessions.getSession(userId)

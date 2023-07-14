@@ -102,7 +102,7 @@ export const scheduringRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { date } = input
 
-      const { userId } = ctx
+      const { userId } = ctx.auth
 
       if (!userId) {
         throw new TRPCError({
